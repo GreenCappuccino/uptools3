@@ -1,0 +1,12 @@
+# upworks --
+#
+# Initialization script normally executed in the interpreter for each
+# Unipen-based application. Adds the Unipen script directory to
+# the auto_path.
+#
+
+if {[info exists auto_path] && $unipen_library != ""} {
+    if {[lsearch -exact $auto_path $unipen_library] < 0} {
+	lappend auto_path $unipen_library
+    }
+}

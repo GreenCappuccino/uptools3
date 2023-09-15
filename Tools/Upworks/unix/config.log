@@ -1,0 +1,7 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:674: checking how to run the C preprocessor
+configure:739: checking for X
+configure:997: checking for X11 header files
+configure:1005: gcc -E  conftest.c >/dev/null 2>conftest.out

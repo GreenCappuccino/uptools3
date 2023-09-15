@@ -1,0 +1,65 @@
+.VERSION 1.0
+.DATA_SOURCE hp
+.DATA_ID August-93-sample
+
+.COMMENT     		#####################
+			### DOCUMENTATION ###
+			#####################
+
+.DATA_CONTACT		Name:		Dave Reynolds
+			Affiliation:	Hewlett Packard Laboratories
+			Address:	Filton Road, Stoke Gifford,
+					Bristol, BS12 6QZ, England
+			Phone:		+44 (272) 228165
+			Fax:		+44 (272) 228128
+			Email:		der@hplb.hpl.hp.com
+
+.SETUP			Site:		Hewlett Packard Laboratories, Bristol
+			Time:		April 1992
+			Conditions:	Supervised recording conditions
+					People sitting at a desk
+ 		        Writers:	Volunteer staff members
+			Form layout:	Lined A5 paper
+
+.DATA_INFO			Alphabet:	Latin
+			Lexicon:	English sentences, words, letters and digits
+			Number of writer(s): 25
+			Writing style:	Cursive and printed
+			Segmentation:	Words written as free form pages.
+			                Manual segmentation into words.
+
+			**** This sample file is a small extract containing
+			**** the digits 0-9 from each of 10 writers
+
+			**** N.B. This translation was based upon an
+			**** intermediate format. Because of this some
+			**** information which is available from the original
+			**** data has been ommitted from these samples,
+			**** specifically:
+   			**** (1) .PEN_UP timing. Scratch value 100 ms used.
+ 			**** (2) .SEGMENT quality code, scratch value "?" used.
+
+.PAD			Machine name:	Wacom 510C + UNIX workstation
+			Display:	Inking onto paper overlay
+					Slave X11 display available to supervisor
+			Sensor:		Electromagnetic resonance sensor
+			Pen:		Untethered pen, tip switch and side button
+			Driver:		Home made
+
+
+.COMMENT		###################
+			### DATA LAYOUT ###
+			###################
+
+.X_DIM			4000
+.Y_DIM			3000	
+
+.COMMENT		###################
+			### UNIT SYSTEM ###
+			###################
+
+.X_POINTS_PER_INCH	550
+.Y_POINTS_PER_INCH	550	
+.POINTS_PER_SECOND	200
+.COORD			X Y	
+

@@ -1,0 +1,580 @@
+#!/bin/sh
+#\
+exec wish8.0 $0 $@
+
+lappend auto_path [file dirname [file dirname [info nameofexecutable]]]
+lappend auto_path [pwd]
+lappend auto_path $env(UNIPEN_LIBRARY)
+lappend auto_path $env(UNIPEN_TCL_LIBRARY)
+
+package require Ink 4
+package require Upworks 4
+
+proc upworks_usage {} {
+	puts stderr "use:     upworks unipen-file \[options\]\!"
+	puts stderr "options: c ncols"
+	puts stderr "         h hierarchy-level"
+	puts stderr "         s string"
+	puts stderr "         i index"
+	puts stderr "         l logfile"
+	exit 1
+}
+
+set nargs [llength $argv]
+set initial_hierarchy 0
+set ncols 4
+if { $nargs < 1 } {
+		upworks_usage
+}
+
+set fname [lindex $argv 0]
+
+set dflt_index   -1
+set dflt_string "qq@qq"
+set fp_upworks_log ""
+
+proc log_upworks { msg } {
+   global fp_upworks_log
+	 
+	if { "$fp_upworks_log" != "" } {
+		puts $fp_upworks_log "$msg"
+		flush $fp_upworks_log
+	} else {
+		puts stdout "$msg"
+	}
+}
+
+
+for {set i 1} {$i<$nargs} {incr i} {
+	set cur_arg [lindex $argv $i]
+	switch $cur_arg {
+		l {
+			incr i
+			set upworks_log_file [lindex $argv $i]
+			set fp_upworks_log [open $upworks_log_file "a+"]
+			set logstart ""
+			set me ""
+			catch {set logstart [exec date]}
+			catch {set me [exec whoami]}
+			puts stdout "logging to $upworks_log_file"
+			log_upworks "upworks $fname by $me at $logstart"
+		}
+		h {
+			incr i
+			set initial_hierarchy [lindex $argv $i]
+			puts stderr "using hierarchy=$initial_hierarchy"
+		}
+		c {
+			incr i
+			set ncols [lindex $argv $i]
+			puts stderr "using ncols=$ncols"
+		}
+		i {
+			incr i
+			set dflt_index [lindex $argv $i]
+			puts stderr "using index=$dflt_index"
+		}
+		s {
+			incr i
+			set dflt_string [lindex $argv $i]
+			puts stderr "using string=$dflt_string"
+		}
+		default {
+			puts stderr "unknown argument $i: $cur_arg\!"
+			upworks_usage
+		}
+	}
+}
+
+# set the default stuff
+
+set unipen_library $env(UNIPEN_TCL_LIBRARY)
+set upworks_rc      $env(UPWORKS_RESOURCE_FILE)
+set bitmaps [file join $unipen_library bitmaps]
+set hierarchies ""
+
+set main_geometry 400x400+0+0
+set viewer_geometry 400x400+400+0
+set manipulator_geometry 400x400+200+400
+set default_colors "red blue orange black olivedrab3 darkslateblue"
+set def_fnt1 "-adobe-courier-bold-o-normal--8-80-*-*-m-*-*-*"
+set def_fnt2 "-adobe-courier-bold-o-normal--*-100-*-*-m-*-*-*"
+set def_fnt3 "-adobe-courier-bold-r-normal--*-240-*-*-m-*-*-*"
+set default_fonts "\
+	$def_fnt1                blue\
+	$def_fnt2                red\
+	$def_fnt3                black\
+"
+
+proc loe_debug {msg} {
+	puts stderr $msg
+#	puts -nonewline stderr "enter <return>: "
+#	gets stdin
+}
+
+set images           ""
+set canvas_images    ""
+set frames           ""
+set attributes       "-width 100 -height 100"
+set use_same_scale   0
+set hierarchy_finished 0
+
+# check if .unipenrc exists, if so, read the resources, else create some
+# default resources
+
+
+if { ! [file exists $upworks_rc] } {
+	set colors $default_colors
+	set fonts $default_fonts
+	inkTcl_set_colors $colors
+	inkTcl_set_fonts $fonts
+	set w [DialogExecute "File '$upworks_rc' does not exist, please click OK to create?"\
+		$upworks_rc\
+		create_default_resources 1]
+	tkwait window $w
+	if { ! [file exists $upworks_rc] } {
+		exit 1
+	}
+} else {
+	set defaults [read_default_resources]
+	set colors [lindex $defaults 0]
+	set fonts [lindex $defaults 1]
+	inkTcl_set_colors $colors
+	inkTcl_set_fonts $fonts
+}
+
+# create the top menu structure
+
+	create_menu_balk
+	set file_button [create_pulldown_menu File\
+	{\
+		{"reload"        {reload_unipen}       }\
+		{"open"          {do_open_unipen}      }\
+		{"save"          {do_save_unipen}      }\
+		{"save_segments" {do_save_segments}    }\
+		{"load_segments" {do_load_segments}    }\
+		{"save_ps"       {postscript_dump .c}  }\
+		{"exit"          {exit_unipen}              }\
+	}]
+	set option_button [create_pulldown_menu Options\
+	{\
+		{"use same scale"   "change_scaling"}\
+		{"edit fonts" "change_fonts"}\
+		{"edit colors" "edit_lines $COLORS $WIDTHS"}\
+		{"set ncolumns" "DialogExecute {Enter number of columns:} $ncols set_ncolumns 1"}\
+		{"edit unipen hierarchy" "edit_hierarchy"}\
+	}]
+
+proc exit_unipen {} {
+	global unipen_saved
+
+	if { $unipen_saved } {
+		exit 0
+	}
+	set unipen_saved [DialogWait "There are unsaved changes! Are you sure to exit now?"]
+	if { $unipen_saved } {
+		exit 0
+	}
+}
+
+proc h_is_digit {h n} {
+	for {set i 0} {$i<$n} {incr i} {
+		if {$h==$i} {
+			return 1
+		}
+	}
+	return 0
+}
+
+proc parse_hierarchies {hiers h} {
+# if 'h' is a number, and it falls into bounds, return 'h'
+	if {[h_is_digit $h [lindex $hiers 0]]} {
+		return $h
+	}
+# if 'h' is a string, it may be CHAR or so
+# first check if 'h' occurs in the hierarchies
+	set alt_h qqq
+	if { "$h" == "CHARACTER" } {
+		set alt_h CHAR
+	}
+	if { "$h" == "CHAR" } {
+		set alt_h CHARACTER
+	}
+	set i 0
+	foreach s [lrange $hiers 1 end] {
+		if { $s == $h || $s == $alt_h } {
+			return $i
+		}
+		incr i
+	}
+	puts stderr "unknown hierarchy '$h'!!"
+	puts stderr "use one of \[0...[expr [lindex $hiers 0] -1]\] or \[[lrange $hiers 1 end]\]!"
+	exit 1
+}
+
+proc edit_hierarchy {} {
+	global hierarchies newfile
+
+	set n [llength $hierarchies]
+	eval set apie ${newfile}b
+	DialogEntryBox "WOW THIS IS COOL!!! You are trying to\
+		create your own hierarchy.\
+		Fill in the entries above and press Ok.\
+		A new file will be created with the hierarchy you enter.\
+		And this file will be opened."\
+		2 "hierarchy filename" "\"[lrange $hierarchies 1 end]\" $apie" "do_edit_hierarchy"
+}
+
+proc do_edit_hierarchy {w} {
+	global newfile
+
+	set hierarchy [$w.settings.entries.e(0) get]
+	set filename  [$w.settings.entries.e(1) get]
+	catch {destroy $w}
+	if { "$newfile" == "$filename" } {
+		if { ! [DialogWait "'$filename' already exists, do you wish to overwrite it?"] } {
+			return
+		}
+		set APIE [exec mktemp]
+		exec cp $filename $APIE
+	} else {
+		set APIE $filename
+	}
+
+	set infile [exec mktemp]
+	save_unipen $infile
+	set fp  [open $infile r]
+	set out [open $APIE w]
+	while { ! [eof $fp] } {
+		set line [gets $fp]
+		set keyword [lindex $line 0]
+		if { "$keyword" == ".HIERARCHY" } {
+			puts $out ".HIERARCHY $hierarchy"
+		} else {
+			puts $out "$line"
+		}
+	}
+	close $fp
+	close $out
+	exec rm $infile
+	if { "$newfile" == "$filename" } {
+		exec mv $APIE $filename
+	}
+	view_unipen $filename
+}
+
+
+proc set_ncolumns {w} {
+	global thelevel ncols
+
+	set ncols [eval $w.e(0) get]
+	catch {destroy $w}
+	view_hierarchy $thelevel 0 -1
+}
+
+proc change_scaling {} {
+	global use_same_scale thelevel
+
+	if {$use_same_scale} {
+		set use_same_scale 0
+		.menu.mOptions.m entryconfigure 1 -label "use same scale"
+	} else {
+		set use_same_scale 1
+		.menu.mOptions.m entryconfigure 1 -label "use optimum scale"
+	}
+	view_hierarchy $thelevel 0 -1
+}
+
+proc create_containers {destroy_containers} {
+	global images canvas_images frames popups main_rc
+	global main_geometry
+
+	foreach im $canvas_images {
+		catch {image delete $im}
+	}
+	set canvas_images ""
+	foreach f $frames {
+		catch {destroy $f}
+	}
+	catch {destroy .f.f1.c}
+	catch {destroy .f.f1.scrollx}
+	catch {destroy .f.f1.scrolly}
+	if { $destroy_containers } {
+		catch {destroy $popups}
+		catch {destroy .child_container}
+		catch {destroy .segm_container}
+		foreach im $images {
+			catch {image delete $im}
+		}
+		set images ""
+	}
+	update
+
+	if { ! [winfo exists .f] } {
+		eval wm geometry . $main_geometry
+		frame .f
+		frame .f.f1
+		pack .f .f.f1 -fill both -expand yes
+	}
+	if { ! [winfo exists .f.f2] } {
+		frame .f.f2
+		pack .f.f2 -fill both -expand yes
+	}
+	canvas .f.f1.c -xscrollcommand ".f.f1.scrollx set" -yscrollcommand ".f.f1.scrolly set"
+	scrollbar .f.f1.scrollx -orient horizontal -command ".f.f1.c xview"
+	scrollbar .f.f1.scrolly -orient vertical -command ".f.f1.c yview"
+	pack .f.f1.scrollx -side bottom -fill x
+	pack .f.f1.scrolly -side left -fill y
+	pack .f.f1.c -fill both -side bottom -expand yes
+
+	frame .f.f1.c.f
+	pack .f.f1.c.f
+	.f.f1.c create window 0 0 -window .f.f1.c.f -anchor nw
+	bind .f.f1.c.f <Configure> "reset_scroll_region %w %h"
+}
+
+proc reset_scroll_region {w h} {
+	.f.f1.c configure -scrollregion "0 0 $w $h"
+}
+
+proc do_view_unipen {w} {
+	global newfile scrolls_segments scroll_popup
+
+	catch {destroy $scrolls_segments $scroll_popup}
+	set filename [do_get_entrybox  $w.settings.entries.e(0)]
+	set hierarchy [do_get_entrybox $w.settings.entries.e(1)]
+	if { "$newfile" == "$filename" } {
+		if { ! [DialogWait "'$filename' already exists, do you wish to overwrite it?"] } {
+			return
+		}
+		set APIE [exec mktemp]
+		exec cp $filename $APIE
+	} else {
+		set APIE $filename
+	}
+	save_unipen $newfile
+	set fp  [open $newfile r]
+	set out [open $APIE w]
+	catch {destroy $w}
+	while { ! [eof $fp] } {
+		set line [gets $fp]
+		set keyword [lindex $line 0]
+		if { "$keyword" == ".HIERARCHY" } {
+			puts $out "$line $hierarchy"
+		} else {
+			puts $out "$line"
+		}
+	}
+	close $fp
+	close $out
+	if { "$newfile" == "$filename" } {
+		exec mv $APIE $filename
+	}
+	view_unipen $filename
+}
+
+proc create_first_segment {l w} {
+	set del [eval $w.e(0) get]
+	add_first_in_hierarchy $l $del
+	destroy $w
+}
+
+proc popup_segments {h l} {
+	global segment_names scrolls_segments hierarchy hierarchy_finished
+	global hierarchies
+
+	.menu.mhierarchy configure -text "Hierarchy=[lindex $hierarchies [expr 1 + $l]]"
+
+	catch {delete $segment_names($l)}
+	set segment_names($l) [get_segment_names $l]
+	set n [lindex $segment_names($l) 0]
+	if { $n == 0 } {
+		set max_del [get_max_del]
+		set w [DialogExecute "NO $h SEGMENTS AVAILABLE!, enter initial delineation to create a new $h"\
+			$max_del\
+			"create_first_segment $l" 1]
+		tkwait window $w
+		set segment_names($l) [get_segment_names $l]
+		catch {destroy $scrolls_segments}
+		set hierarchy $l
+		view_hierarchy $l 1 -1
+		return
+	}
+	set segment_names($l) [get_segment_names $l]
+	catch {destroy scrolls_segments}
+	set scrolls_segments [scroll_segments s$l " Please select a $h segment to display"\
+		$segment_names($l) 0 "goto_word $l"]
+	if { $hierarchy != $l || !$hierarchy_finished} {
+		set hierarchy $l
+		view_hierarchy $l 1 -1
+	}
+}
+
+proc create_hierarchy_menus {fname} {
+	global nhierarchies hierarchies segment_names hierarchy
+	global topbar_buttons file_button option_button segment_buttons
+	global initial_hierarchy
+
+	catch {close_unipen}
+	set newhierarchies [open_unipen $fname]
+	set initial_hierarchy [parse_hierarchies $newhierarchies $initial_hierarchy]
+
+	eval ink_set_tablet_info [get_unipen_tablet_info]
+
+	set topbar_buttons "$file_button $option_button"
+	set segment_buttons ""
+	set hierarchy $initial_hierarchy
+	catch {delete nhierarchies hierarchies segment_names}
+	if {"$hierarchies"!=""} {
+		catch {destroy .menu.mhierarchy}
+	}
+	set hierarchies $newhierarchies
+	set nhierarchies [lindex $hierarchies 0]
+	set hierarchies [string range $hierarchies 1 end]
+	set hier_items ""
+	for {set i 0} {$i<$nhierarchies} {incr i} {
+		set h [lindex $hierarchies [expr $i+1]]
+		set segment_names($i) [get_segment_names $i]
+		set hier_items "$hier_items \{ $h \{ popup_segments $h $i \} \}"
+	}
+	set b [create_pulldown_menu hierarchy " $hier_items "]
+	$b configure -text "Hierarchy=[lindex $hierarchies [expr $initial_hierarchy+1]]"
+	set topbar_buttons "$topbar_buttons $b"
+	set segment_buttons "$segment_buttons $b"
+}
+
+proc inactivate_topbar_buttons {l} {
+	global topbar_buttons file_button segment_names hierarchies
+
+	foreach b $topbar_buttons {
+		$b configure -state disabled -text ""
+	}
+	set n [lindex $segment_names($l) 0]
+	set h [lindex $hierarchies [expr $l+1]]
+	$file_button configure -text "drawing $n $h segments........."
+	update
+}
+
+proc activate_topbar_buttons {l} {
+	global file_button option_button segment_buttons hierarchies
+
+	$file_button configure -text File -state normal
+	$option_button configure -text Options -state normal
+	for {set i 0} {$i<[llength $segment_buttons]} {incr i} {
+		set h [lindex $hierarchies [expr $i+1]]
+		[lindex $segment_buttons $i] configure -state normal -text $h
+	}
+	[lindex $segment_buttons $l] configure -state active
+	update
+}
+
+proc up_get_segnr {l str idx} {
+	if { "$str"=="qq@qq" } {
+		eval set res [upgetsegnr $l * $idx]
+	} else {
+		eval set res [upgetsegnr $l $str $idx]
+	}
+	return $res
+}
+
+proc view_unipen {fname} {
+	global newfile main_rc unipen_saved initial_hierarchy
+	global main_geometry
+	global dflt_string dflt_index nimages
+
+	set newfile $fname
+	create_hierarchy_menus $fname
+
+	if {"$dflt_string"!="qq@qq" || $dflt_index!=-1} {
+		set segidx [up_get_segnr $initial_hierarchy $dflt_string $dflt_index]
+#		jump_to_word $initial_hierarchy $segidx $nimages 1
+	} else {
+		set segidx -1
+	}
+
+	view_hierarchy $initial_hierarchy 1 $segidx
+
+	set im [eval image create ink apie $main_rc]
+	my_popup_ink_atts MainRc .f.f1 .f.f2 $im
+	image delete $im
+	draw_pane_curtain ".f" .f.f1 .f.f2
+	set unipen_saved 1
+	set initial_hierarchy 0
+	eval wm geometry . $main_geometry
+	update
+	bind . <Configure> "remember_geometry . main_geometry"
+}
+
+proc reload_unipen {} {
+	global viewing opening newfile
+
+	set opening 0
+	view_unipen $newfile
+}
+
+proc do_open_unipen {} {
+	global viewing opening newfile
+
+	set fname [tk_getOpenFile -filetypes { {"unipen files" {.dat} }}]
+	if {$fname != ""} {
+		set opening 1
+		set newfile $fname
+		if {$viewing} {
+			return
+		}
+		set opening 0
+		view_unipen $fname
+	}
+}
+
+proc do_save_unipen {} {
+	global unipen_saved
+	set fname [tk_getSaveFile -filetypes { {"unipen files" {*.dat} }}]
+   if {$fname == ""} {
+		return
+	}
+	busy save_unipen $fname
+	set unipen_saved 1
+}
+
+proc do_save_segments {} {
+	set fname [tk_getSaveFile -filetypes { {"segment files" {*.segm} }}]
+   if {$fname == ""} {
+		return
+	}
+	busy save_segments $fname
+}
+
+proc do_load_segments {} {
+	set fname [tk_getOpenFile -filetypes { {"segment files" {*.segm} }}]
+   if {$fname == ""} {
+		return
+	}
+	set APIE [exec mktemp]
+	busy save_with_other_dels $APIE $fname
+	DisplayMessage "Current UNIPEN-file merged with $fname and temporarily\
+	stored in $APIE. Note that delineations (.SEGMENT entries) are superseded\
+	by delineations from $fname."
+	set APIE [exec mktemp]
+	busy save_with_other_dels $APIE $fname
+	DisplayMessage "Current UNIPEN-file merged with $fname and temporarily\
+	stored in $APIE. Note that delineations (.SEGMENT entries) are superseded\
+	by delineations from $fname."
+	view_unipen $APIE
+}
+
+proc postscript_dump {w} {
+	set fname [tk_getSaveFile -filetypes { {"postscript files" {*.ps} }}]
+   if {$fname == ""} {
+		return
+	}
+   busy $w postscript -file $fname
+	do_loe_beep
+}
+
+set unipen_saved 1
+set opening 0
+set viewing 0
+set popups  ""
+bind . <q> exit_unipen
+view_unipen $fname

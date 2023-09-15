@@ -1,0 +1,126 @@
+# Generated automatically from Makefile.in by configure.
+include ../../../Makefile.header
+PROJECT = upworks
+
+# The directory containing the Tcl sources and headers appropriate
+# for this version of Tk ("srcdir" will be replaced or has already
+# been replaced by the configure script):
+
+TCL_INC_DIR =	/u6/nici/software/pak/tcltk8.0/include
+TK_INC_DIR  =	/u6/nici/software/pak/tcltk8.0/include
+XINCLUDES  =	# no special path needed
+
+# Default top-level directories in which to install architecture-
+# specific files (exec_prefix) and machine-independent files such
+# as scripts (prefix).  The values specified here may be overridden
+# at configure-time with the --exec-prefix and --prefix options
+# to the "configure" script.
+
+prefix =		/u6/nici/software/pak/tcltk8.0
+exec_prefix =		/u6/nici/software/pak/tcltk8.0
+
+# The following definition can be set to non-null for special systems
+# like AFS with replication.  It allows the pathnames used for installation
+# to be different than those used for actually reference files at
+# run-time.  INSTALL_ROOT is prepended to $prefix and $exec_prefix
+# when installing files.
+INSTALL_ROOT =
+
+# Path to use at runtime to refer to LIB_INSTALL_DIR:
+LIB_RUNTIME_DIR =	$(exec_prefix)/lib
+
+# Directory in which to install the .a or .so binary for the Tk library:
+LIB_INSTALL_DIR =	$(INSTALL_ROOT)$(LIB_RUNTIME_DIR)
+
+# Libraries to use when linking:
+LIBS =  -lm -lc
+
+# Libraries to use when linking:
+TK_LIBS = -L/usr/local/X11/lib -lX11 $(LIBS)
+
+# Libraries to use when linking:
+UNIPEN_LIBRARY = $(UL_LIB)/upworks$(VERSION)
+
+# Library to use when running tcl-scripts
+UNIPEN_TCL_LIBRARY = $(UL_DIR)/Tools/Upworks/library
+
+# Libraries to use when linking:
+UNIPEN_LIBS = -L$(UL_LIB) -luplib$(VERSION) $(LIBS)
+
+#----------------------------------------------------------------
+# The information below is modified by the configure script when
+# Makefile is generated from Makefile.in.  You shouldn't normally
+# modify any of this stuff by hand.
+#----------------------------------------------------------------
+
+SHLIB_CFLAGS =  -fPIC
+SHLIB_LD     =  /usr/ccs/bin/ld -G -z text
+SHLIB_SUFFIX =  4.so
+SRC_DIR      =  ../generic
+
+CC_SWITCHES = $(CFLAGS) ${XINCLUDES} -I${TK_INC_DIR} -I${TCL_INC_DIR} \
+	${SHLIB_CFLAGS} -I../generic -I../Uplib -DUNIPEN_TCL_LIBRARY=\"${UNIPEN_TCL_LIBRARY}\" \
+	-DUNIPEN_VERSION=\"${VERSION}\"\
+	-DEXPECTED_TK_VERSION=${EXPECTED_TK_VERSION}\
+	-DEXPECTED_TCL_VERSION=${EXPECTED_TCL_VERSION}
+
+all: $(UL_LIB)/libupworks${SHLIB_SUFFIX}\
+	$(UL_LIB)/libink${SHLIB_SUFFIX}\
+	$(UL_BIN)/upworks
+
+$(UL_BIN)/upworks: upworks
+	@(\cp -f upworks $@)
+	@(echo upworks refreshed)
+upworks: upworks.in
+	./configure $(VERSION)
+
+$(UL_LIB)/libupworks${SHLIB_SUFFIX}: read_unipen.o jump_through_segments.o $(LIB_UPLIB)
+	${SHLIB_LD} read_unipen.o jump_through_segments.o -o $@ $(UNIPEN_LIBS) $(MY_TCL_LIB)
+	@(\cp -f pkgIndex.tcl $(UL_LIB))
+read_unipen.o: $(SRC_DIR)/read_unipen.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/read_unipen.c
+jump_through_segments.o: $(SRC_DIR)/jump_through_segments.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/jump_through_segments.c
+
+$(UL_LIB)/libink${SHLIB_SUFFIX}: ink_master.o ink_hwr.o ink_vabs.o ink_siglib.o ink_widget.o
+	${SHLIB_LD} ink_widget.o ink_master.o ink_hwr.o ink_vabs.o ink_siglib.o\
+		-o $@ $(TK_LIBS) $(LINK_LIBS) $(MY_TCL_LIB)
+ink_master.o: $(SRC_DIR)/ink_master.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/ink_master.c
+ink_widget.o: $(SRC_DIR)/ink_widget.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/ink_widget.c
+ink_hwr.o: $(SRC_DIR)/ink_hwr.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/ink_hwr.c
+ink_vabs.o: $(SRC_DIR)/ink_vabs.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/ink_vabs.c
+ink_siglib.o: $(SRC_DIR)/ink_siglib.c
+	$(CC) -c $(CC_SWITCHES) $(SRC_DIR)/ink_siglib.c
+
+uplibs   = $(UPTOOLS)/Uplib/*.o
+mainobjs = maintest.o ink_hwr.o ink_vabs.o\
+		ink_siglib.o ink_master.o ink_widget.o\
+		read_unipen.o jump_through_segments.o
+maintest: $(mainobjs)
+	$(CC) maintest.o -o $@ libink${SHLIB_SUFFIX} $(uplibs) $(mainobjs) -lm
+
+install:	install-binaries install-libraries
+
+install-binaries:
+	@mkinstalldirs $(LIB_INSTALL_DIR)
+	@echo "Installing libupworks${SHLIB_SUFFIX}"
+	install-sh -c -m 555 libupworks${SHLIB_SUFFIX} $(LIB_INSTALL_DIR)
+	@echo "Installing libink${SHLIB_SUFFIX}"
+	install-sh -c -m 555 libink${SHLIB_SUFFIX} $(LIB_INSTALL_DIR)
+	@echo "Installing pkgIndex.tcl"
+	@pkgInstall.tcl $(LIB_INSTALL_DIR)
+
+clean:
+	rm -f *.o *${SHLIB_SUFFIX}\
+	$(UL_LIB)/libupworks${SHLIB_SUFFIX}\
+	$(UL_LIB)/libink${SHLIB_SUFFIX}\
+	$(UL_LIB)/pkgIndex.tcl\
+	$(UL_BIN)/upworks
+
+distclean:	clean
+	rm -f config.status config.log config.cache Makefile \
+		pkgIndex.tcl upworks

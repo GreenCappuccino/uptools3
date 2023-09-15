@@ -1,0 +1,206 @@
+#!/bin/csh
+#
+# configure: a script to make the Makefile.header for use on any of these
+# (tested) configurations:
+# HP-gcc-HP-UX, DEC-gcc-Ultrix, SUN-gcc-solaris, PC-gcc-Linux, SUN-gcc-sunos4, SGI-gcc-Irix
+# 
+#
+
+set UPTOOLS   = `grep "UPTOOLS = " Makefile.template | awk '{ print $3 }'\
+   | tr - d '()'`
+echo $UPTOOLS
+if ( "$UPTOOLS" == "USE_PWD" ) then
+	set UPTOOLS = `pwd`
+endif
+
+set VERSION     = 4
+
+
+
+set arch        = `uname`
+set UPWORKS_RC   = `grep "UPWORKS_RESOURCE_FILE = " Makefile.template | awk '{ print $3 }' | tr -d '()'`
+set UNIPEN_FNTS = `grep "UPWORKS_FONTS = " Makefile.template | awk '{ print $3 }' | tr -d '()'`
+
+echo "UPTOOLS   = $UPTOOLS"
+echo "VERSION   = $VERSION"
+
+if ( $#argv == 1 ) then
+	if ( $1 == UPTOOLS_SETTINGS ) then
+		goto uptools_settings
+	else
+		goto usage
+	endif
+else
+	if ( $#argv == 4 ) then
+		echo using $1 as UP_INSTALL_UL_LIB
+		echo using $2 as UP_INSTALL_BIN
+		echo using $3 as UP_INSTALL_LIB
+		echo using $4 as UP_INSTALL_TCL
+		set uptools_settings = $1/UPTOOLS_SETTINGS
+		echo using $uptools_settings as UPTOOLS_SETTINGS
+		set UP_INSTALL_UL_LIB = $1
+		set UP_INSTALL_BIN = $2
+		set UP_INSTALL_LIB = $3
+		set UP_INSTALL_TCL = $4
+		goto uptools_settings_lib
+	else
+		if ( $#argv != 0 ) then
+			goto usage
+		endif
+	endif
+endif
+
+\rm -f Makefile.header
+
+eval set updir = $UPTOOLS
+if ( ! -d $updir ) then
+	echo UPTOOLS $updir does not exist\!
+	exit 1
+endif
+set subdirs = "Uplib Tools lib bin"
+foreach d ( $subdirs ) 
+	if ( ! -d $updir/$d ) then
+		echo UPTOOLS-dir $updir/$d does not exist\!
+		exit 1
+	endif
+end
+
+if ( $arch == "SunOS" ) set arch = `uname -sr | tr -d " " | sed "s/\..//g"`
+echo Creating a Makefile.header for \[$arch\]
+echo "using settings defined by Makefile.template"
+
+echo "#" >! Makefile.header
+echo "# Makefile header for [$arch]" >> Makefile.header
+echo "# Automatically created by 'configure $VERSION'" >> Makefile.header
+echo "# Creation date: `date`" >> Makefile.header
+echo "#" >> Makefile.header
+echo "# This file is included by all Makefiles below" >> Makefile.header
+echo "#" >> Makefile.header
+sed "s/\#\#$arch\#//;s/\#\#VERSION/$VERSION/;s?UPTOOLS = USE_PWD?UPTOOLS = $UPTOOLS?" < Makefile.template |\
+	grep -v "^##" >> Makefile.header
+
+if ( ! -d Tools/Upworks ) then
+	echo "no Upworks available, skipping that stuff"
+	exit
+endif
+
+set MY_TCL_DIR = `grep "^MY_TCL_DIR = " Makefile.template | awk '{ print $3 }'`
+if ( "$MY_TCL_DIR" == "DEFAULT" ) then
+	echo using default Tcl/Tk stuff
+	set newprefix = "prefix=NONE"
+else
+	set newprefix = "prefix=$MY_TCL_DIR"
+	echo setting private Tcl/Tk stuff to $newprefix
+endif
+sed -e "s?^prefix=.*?$newprefix?g" < Tools/Upworks/unix/configure >! Tools/Upworks/unix/newconfigure
+\mv -f Tools/Upworks/unix/newconfigure Tools/Upworks/unix/configure
+chmod +x Tools/Upworks/unix/configure
+make configure_tcl
+
+uptools_settings:
+echo configuring UPTOOLS_SETTINGS
+echo '#' >! UPTOOLS_SETTINGS
+echo '# resource file for setting environment variables' >> UPTOOLS_SETTINGS
+echo '#' >> UPTOOLS_SETTINGS
+echo '# use it with: "source UPTOOLS_SETTINGS"' >> UPTOOLS_SETTINGS
+echo '#' >> UPTOOLS_SETTINGS
+echo '' >> UPTOOLS_SETTINGS
+echo 'set VERSION = 4' >> UPTOOLS_SETTINGS
+echo '' >> UPTOOLS_SETTINGS
+echo "setenv UPTOOLS $UPTOOLS" >> UPTOOLS_SETTINGS
+echo 'setenv UL_BIN $UPTOOLS/bin' >> UPTOOLS_SETTINGS
+echo 'setenv UL_LIB $UPTOOLS/lib' >> UPTOOLS_SETTINGS
+echo 'setenv UNIPEN_INCLUDE_PATH ". .INHERIT '$UPTOOLS'"' >> UPTOOLS_SETTINGS
+echo 'setenv UNIPEN_DEFINITION_FILE $UPTOOLS/data/unipen.def' >> UPTOOLS_SETTINGS
+echo 'setenv UNIPEN_LIBRARY $UPTOOLS/lib' >> UPTOOLS_SETTINGS
+echo 'setenv UNIPEN_TCL_LIBRARY $UPTOOLS/Tools/Upworks/library' >> UPTOOLS_SETTINGS
+echo 'setenv TCLLIBPATH "$UNIPEN_LIBRARY"' >> UPTOOLS_SETTINGS
+echo "setenv UPWORKS_RESOURCE_FILE $UPWORKS_RC" >> UPTOOLS_SETTINGS
+echo "setenv UPWORKS_FONTS $UNIPEN_FNTS" >> UPTOOLS_SETTINGS
+echo "setenv UNIPEN2ANIMGIF_PATH $UPTOOLS/Tools/Uni2animgif" >> UPTOOLS_SETTINGS
+echo 'set curlibpath = "`printenv LD_LIBRARY_PATH`"' >> UPTOOLS_SETTINGS
+echo 'if ( "$curlibpath" == "" ) then' >> UPTOOLS_SETTINGS
+echo '	setenv LD_LIBRARY_PATH $UL_LIB' >> UPTOOLS_SETTINGS
+echo 'else' >> UPTOOLS_SETTINGS
+echo '	setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH":$UL_LIB' >> UPTOOLS_SETTINGS
+echo 'endif' >> UPTOOLS_SETTINGS
+echo '' >> UPTOOLS_SETTINGS
+echo '' >> UPTOOLS_SETTINGS
+echo 'set path = ( $path $UL_BIN )' >> UPTOOLS_SETTINGS
+echo 'rehash' >> UPTOOLS_SETTINGS
+echo 'set targets = "upview upread upread2 unipen2eps uni2animgif upworks"' >> UPTOOLS_SETTINGS
+echo 'echo "checking for availability of $targets"' >> UPTOOLS_SETTINGS
+echo '' >> UPTOOLS_SETTINGS
+echo 'foreach t ( $targets )' >> UPTOOLS_SETTINGS
+echo '	which $t' >> UPTOOLS_SETTINGS
+echo 'end' >> UPTOOLS_SETTINGS
+exit 0
+
+uptools_settings_lib:
+echo configuring UPTOOLS_SETTINGS to $uptools_settings
+echo '#' >! $uptools_settings
+echo '# resource file for setting environment variables' >> $uptools_settings
+echo '#' >> $uptools_settings
+echo '# use it with: "source UPTOOLS_SETTINGS"' >> $uptools_settings
+echo '#' >> $uptools_settings
+echo '' >> $uptools_settings
+echo 'set VERSION = 4' >> $uptools_settings
+echo '' >> $uptools_settings
+echo "setenv UL_BIN $UP_INSTALL_BIN" >> $uptools_settings
+echo "setenv UL_LIB $UP_INSTALL_LIB" >> $uptools_settings
+echo "setenv UL_TCL $UP_INSTALL_TCL" >> $uptools_settings
+echo 'setenv UNIPEN_INCLUDE_PATH ". .INHERIT"' >> $uptools_settings
+echo "setenv UNIPEN_DEFINITION_FILE $UP_INSTALL_UL_LIB/unipen.def" >> $uptools_settings
+echo "setenv UNIPEN_LIBRARY $UP_INSTALL_LIB" >> $uptools_settings
+echo "setenv UNIPEN_TCL_LIBRARY $UP_INSTALL_UL_LIB/library" >> $uptools_settings
+echo 'setenv TCLLIBPATH "$UNIPEN_LIBRARY"' >> $uptools_settings
+echo "setenv UPWORKS_RESOURCE_FILE $UP_INSTALL_UL_LIB/UpworksDefaults" >> $uptools_settings
+echo "setenv UPWORKS_FONTS $UNIPEN_FNTS" >> UPTOOLS_SETTINGS
+echo "setenv UNIPEN2ANIMGIF_PATH $UPTOOLS/Tools/Uni2animgif/gifs" >> $uptools_settings
+echo 'set curlibpath = "`printenv LD_LIBRARY_PATH`"' >> $uptools_settings
+echo 'if ( "$curlibpath" == "" ) then' >> $uptools_settings
+echo "	setenv LD_LIBRARY_PATH $UP_INSTALL_LIB" >> $uptools_settings
+echo 'else' >> $uptools_settings
+echo '	setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH":'$UP_INSTALL_LIB >> $uptools_settings
+echo 'endif' >> $uptools_settings
+echo '' >> $uptools_settings
+echo '' >> $uptools_settings
+
+echo "adding $UP_INSTALL_BIN to $uptools_settings"
+echo 'printenv PATH | grep $UL_BIN >! /dev/null' >> $uptools_settings
+echo 'if ( $status ) then' >> $uptools_settings
+echo '	setenv PATH ${curpath}:$UL_BIN' >> $uptools_settings
+echo 'endif' >> $uptools_settings
+
+echo "adding $UP_INSTALL_TCL to $uptools_settings"
+echo 'printenv PATH | grep $UL_TCL >! /dev/null' >> $uptools_settings
+echo 'if ( $status ) then' >> $uptools_settings
+echo '	setenv PATH ${curpath}:$UL_TCL' >> $uptools_settings
+echo 'endif' >> $uptools_settings
+
+echo 'rehash' >> $uptools_settings
+
+echo 'set targets = "upview upread upread2 unipen2eps uni2animgif upworks"' >> $uptools_settings
+echo 'echo "checking for availability of $targets"' >> $uptools_settings
+echo '' >> $uptools_settings
+echo 'foreach t ( $targets )' >> $uptools_settings
+echo '	which $t' >> $uptools_settings
+echo 'end' >> $uptools_settings
+echo ""
+echo "installation completed, to run any of the targets, first source:"
+echo "source $uptools_settings"
+echo "I recommend adding the next line to your .login file:"
+echo "source $uptools_settings"
+exit 0
+
+usage:
+	echo "'configure' is a script which generates Makefile.header"
+	echo and some resource files. Typically, it is called by you once, and
+	echo after that by the Makefile twice.
+	echo "use it as:"
+	echo "      configure"
+	echo "or    configure UPTOOLS_SETTINGS"
+	echo "or    configure UP_INSTALL_UL_LIB UP_INSTALL_BIN UP_INSTALL_LIB UP_INSTALL_TCL"
+	echo ""
+	echo "'configure was called with:'"
+	echo $*

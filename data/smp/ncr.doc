@@ -1,0 +1,208 @@
+.VERSION 1.0
+.DATA_SOURCE ncr
+.DATA_ID August-93-sample
+
+.COMMENT               #####################
+                       ### Documentation ###
+                       #####################
+
+.DATA_CONTACT          Name:                  Tina Allen
+                       Affliation:            NCR Corporation
+                       Address:               500 Tech Parkway, NW
+                                              Atlanta, GA  30313, USA
+                       Phone:                 1 (404) 853 29 77
+                       Fax:                   1 (404) 853 29 86
+                       Email:                 tina.allen@winhitc.atlantaga.ncr.com
+
+.SETUP                 Site:                  NCR Corporation
+                                              Atlanta, GA  30313, USA
+                       Time:                  June to August 1993
+                       Conditions:            Supervised recording conditions
+                                              People sitting at a desk
+                       Writers:               People inexperienced with Pen technology
+                       Form layout:           4 x 21 Grid
+
+.DATA_INFO             Alphabet:              Latin, uppercase, lowercase, 0-9,
+                                              punctuation (. , / - ; :)
+                       Lexicon:               Characters
+                       Quantity:              84
+                       Quality:               Raw data, unchecked
+                       Distribution:          4 x 21 Grid
+                       Number Of Writer(s):   1
+                       Writing style:         Printed
+                       Segmentation:          Characters written in boxes.
+                                              Segmentation done automatically
+
+.PAD                   Machine Name:          Scripttel display digitizer attached
+                                              to a 486 PC, running under Microsoft Windows
+                       Display:               Pasive backlit liquid crystal display (LCD)
+                                              Matrix 640 x 480
+                                              VGA standard, black on white, 16 gray shades
+                       Sensor:                Resistive
+                       Pen:                   Tethered pen, tip switch and side button
+                       Driver:                Superscript driver for Micrsoft windows
+
+.COMMENT               ###################
+                       ### DATA LAYOUT ###
+                       ###################
+.X_DIM                 301
+.Y_DIM                 738
+.H_LINE                246
+
+.COMMENT               ###################
+                       ### UNIT SYSTEM ###
+                       ###################
+.X_POINTS_PER_MM       50
+.Y_POINTS_PER_MM       50
+.POINTS_PER_SECOND     100
+
+.COMMENT               ####################
+                       ### DECLARATIONS ###
+                       ####################
+.HIERARCHY	       CHARACTER   
+.COORD                 X Y
+
+.COMMENT               ################
+                       ### .LEXICON ###
+                       ################
+
+.LEXICON
+ "A"
+ "B"
+ "C"
+ "D"
+ "E"
+ "F"
+ "G"
+ "H"
+ "I"
+ "J"
+ "K"
+ "L"
+ "M"
+ "N"
+ "O"
+ "P"
+ "Q"
+ "R"
+ "S"
+ "T"
+ "U"
+ "V"
+ "W"
+ "X"
+ "Y"
+ "Z"
+ "a"
+ "b"
+ "c"
+ "d"
+ "e"
+ "f"
+ "g"
+ "h"
+ "i"
+ "j"
+ "k"
+ "l"
+ "m"
+ "n"
+ "o"
+ "p"
+ "q"
+ "r"
+ "s"
+ "t"
+ "u"
+ "v"
+ "w"
+ "x"
+ "y"
+ "z"
+ "0"
+ "1"
+ "2"
+ "3"
+ "4"
+ "5"
+ "6"
+ "7"
+ "8"
+ "9"
+ "."
+ ","
+ "/"
+ "-"
+ ";"
+ ":"
+
+.LEXICON_FREQ
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+

@@ -1,0 +1,143 @@
+Colors {
+ red
+ blue
+ orange
+ black
+ olivedrab3
+ darkslateblue
+}
+SegmentFont {
+-adobe-helvetica-medium-r-normal--11-80-100-100-p-56-iso8859-1
+blue
+}
+SubsegmentFont {
+-adobe-courier-bold-o-normal--14-140-75-75-m-90-iso8859-1
+red
+}
+SignalFont {
+-adobe-courier-bold-o-normal--8-80-75-75-m-50-iso8859-1
+blue
+}
+MenusFont {
+-adobe-helvetica-bold-r-normal--18-180-75-75-p-103-iso8859-1
+}
+DialogsFont {
+-adobe-courier-medium-r-normal--12-120-75-75-m-70-iso8859-1
+}
+ButtonsFont {
+-adobe-courier-bold-r-normal--12-120-75-75-m-70-iso8859-1
+}
+LabelsFont {
+-adobe-courier-bold-r-normal--12-120-75-75-m-70-iso8859-1
+}
+EntriesFont {
+-adobe-helvetica-medium-r-normal--11-80-100-100-p-56-iso8859-1
+}
+MainGeometry {
+ 392x294+0+0 
+}
+ViewerGeometry {
+ 401x259+400+0 
+}
+ManipulatorGeometry {
+ 30x29+200+400 
+}
+MainRc {
+ -_suspend 0
+ -minpres 1.0
+ -width 75
+ -height 75
+ -ccolor deeppink1
+ -scolor yellow
+ -pd_color black
+ -pu_color magenta
+ -sel_color purple
+ -margin 0.03
+ -cwidth 1
+ -swidth 2
+ -uwidth 0
+ -dwidth 1
+ -sel_width 3
+ -text_offset -200
+ -_show_sample 0
+ -_show_subsegs 0
+ -_only_subsegs 0
+ -_mark_penstreams 0
+ -_use_same_scale 1
+ -_remember_bounds 0
+ -_ignore_penups 0
+ -lowpass_nsmooth 0
+ -lowpass_nrepeat 3
+ -_Spatial_Resampling 0
+ -_showhwr 1
+ -_Show_Signals 0
+ -signal1 P
+ -signal2 VA
+ -signal3 DPHI
+}
+ViewerRc {
+ -_suspend 0
+ -minpres 1.0
+ -width 300
+ -height 200
+ -ccolor deeppink1
+ -scolor magenta
+ -pd_color black
+ -pu_color magenta
+ -sel_color purple
+ -margin 0.03
+ -cwidth 1
+ -swidth 1
+ -uwidth 0
+ -dwidth 5
+ -sel_width 3
+ -text_offset 5
+ -_show_sample 1
+ -_show_subsegs 1
+ -_only_subsegs 0
+ -_mark_penstreams 0
+ -_use_same_scale 1
+ -_remember_bounds 0
+ -_ignore_penups 0
+ -lowpass_nsmooth 0
+ -lowpass_nrepeat 3
+ -_Spatial_Resampling 0
+ -_showhwr 1
+ -_Show_Signals 0
+ -signal1 P
+ -signal2 VA
+ -signal3 DPHI
+}
+ManipulatorRc {
+ -_suspend 0
+ -minpres 1.0
+ -width 400
+ -height 300
+ -ccolor deeppink1
+ -scolor yellow
+ -pd_color black
+ -pu_color magenta
+ -sel_color purple
+ -margin 0.03
+ -cwidth 1
+ -swidth 2
+ -uwidth 0
+ -dwidth 1
+ -sel_width 3
+ -text_offset -200
+ -_show_sample 1
+ -_show_subsegs 1
+ -_only_subsegs 0
+ -_mark_penstreams 0
+ -_use_same_scale 0
+ -_remember_bounds 0
+ -_ignore_penups 0
+ -lowpass_nsmooth 0
+ -lowpass_nrepeat 0
+ -_Spatial_Resampling 0
+ -_showhwr 1
+ -_Show_Signals 0
+ -signal1 P
+ -signal2 VA
+ -signal3 DPHI
+}

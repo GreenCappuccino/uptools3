@@ -1,0 +1,46 @@
+This is to announce the new release of the UNIPEN-related software
+package:
+
+    UPTOOLS, VERSION 3.2
+    
+This UNIX software is mainly intended for researchers in on-line
+handwriting recognition. It allows for a hierarchical annotation
+of on-line handwritten data coming from XY digitizers or pen
+computers. The software is not intended for processing off-line
+(i.e., optically scanned) handwriting data.  The purpose of this
+software is to stimulate the use of the UNIPEN file format for
+on-line handwriting recognition research. This is the same data
+format as is used within the UNIPEN recognizer benchmark project
+(http://hwr.nici.kun.nl/unipen/).
+------------------------------------------------------------------
+
+upview      - An X-Windows program for quickly visualizing 
+              UNIPEN files.
+upread      - A program for transforming or extracting data 
+              from any UNIPEN file.
+
+upworks     - A large program using Tcl/Tk on X-Windows for 
+              browsing through UNIPEN files, and editing or 
+              entering .SEGMENTS. Time series of essential signals
+              can be viewed. There are many options for changing 
+              graphical attributes (such as the color of segments).
+
+uni2animgif - A program for transforming data from any UNIPEN 
+              file into animated GIF images.
+unipen2eps  - A program for transforming data from any UNIPEN 
+              file into encapsulated PostScript.
+
+An introduction to UPTOOLS3 can be found at:
+
+   http://hwr.nici.kun.nl/unipen/uptools3
+
+The new software is available via ftp at:
+
+   ftp.nici.kun.nl:pub/UNIPEN/tools/uptools3.tar.gz
+
+Examples of UNIPEN files are included, for instance 'large.dat'
+with the annotated hierarchy: 'PAGE PARAGRAPH LINE WORD CHAR'
+
+------------------------------------------------------------------
+Enjoy using UPTOOLS3 and the UNIPEN file format!
+Louis Vuurpijl and Lambert Schomaker

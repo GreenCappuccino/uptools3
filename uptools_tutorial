@@ -1,0 +1,103 @@
+#!/bin/csh
+#
+
+clear
+echo "       welcome to the small uptools tutorial"
+
+echo 'checking environment variables'
+echo "UNIPEN_INCLUDE_PATH = $UNIPEN_INCLUDE_PATH"
+echo "UNIPEN_DEFINITION_FILE = $UNIPEN_DEFINITION_FILE"
+echo "UPWORKS_RESOURCE_FILE = $UPWORKS_RESOURCE_FILE"
+echo "UPWORKS_FONTS = $UPWORKS_FONTS"
+echo "UNIPEN2ANIMGIF_PATH = $UNIPEN2ANIMGIF_PATH"
+
+if ( "$UPTOOLS" == "" ) then
+	echo environment variable UPTOOLS not set\!
+	exit 1
+endif
+if ( "$UNIPEN_INCLUDE_PATH" == "" ) then
+	echo environment variable UNIPEN_INCLUDE_PATH not set\!
+	exit 1
+endif
+if ( "$UNIPEN_DEFINITION_FILE" == "" ) then
+	echo environment variable UNIPEN_DEFINITION_FILE not set\!
+	exit 1
+endif
+if ( "$UPWORKS_RESOURCE_FILE" == "" ) then
+	echo environment variable UPWORKS_RESOURCE_FILE not set\!
+	exit 1
+endif
+if ( "$UPWORKS_FONTS" == "" ) then
+	echo environment variable UPWORKS_FONTS not set\!
+	exit 1
+endif
+if ( "$UNIPEN2ANIMGIF_PATH" == "" ) then
+	echo environment variable UNIPEN2ANIMGIF_PATH not set\!
+	exit 1
+endif
+
+if ( ! -f $UPTOOLS/data/large.dat ) then
+	echo test data file '"'$UPTOOLS/data/large.dat'"' not found\!
+	exit 1
+endif
+
+echo "now trying each of the tools"
+echo "hit <enter> anytime you see some dots ......."
+set anser = $<
+clear
+echo ""
+echo ""
+echo "where is upview ?... "`which upview`
+if ( $status ) then
+	echo executable 'upview' not found\!
+	exit 1
+endif
+echo ""
+echo -n "upview data/large.dat ......."
+set anser = $<
+upview data/large.dat
+
+clear
+echo "where is upread ?... "`which upread`
+if ( $status ) then
+	echo executable 'upread' not found\!
+	exit 1
+endif
+echo ""
+echo "extracting all words containing some letter 'a' from large.dat"
+echo -n "upread -l WORD -s '*a*' data/large.dat -o data/word_a.dat ......."
+set answer = $<
+\rm -f data/word_a.dat
+upread -l WORD -s '*a*' data/large.dat -o data/word_a.dat
+echo ""
+echo -n "using upview to view the result: ......."
+set answer = $<
+upview data/word_a.dat
+
+clear
+echo "where is unipen2eps ?... "`which unipen2eps`
+if ( $status ) then
+	echo executable 'unipen2eps' not found\!
+	exit 1
+endif
+echo ""
+echo "transforming all lines to an encapsulated postscript file"
+echo -n "unipen2eps -l LINE -o lines.eps -c 1 ......."
+set answer = $<
+\rm -f lines.eps
+unipen2eps data/large.dat -l LINE -o lines.eps -c 1
+ghostview lines.eps
+echo ""
+echo "transforming all words containing an a to an encapsulated postscript file"
+echo -n "unipen2eps data/large.dat -l WORD -s '*a*' -o words.eps -m .3 -f 16 ......."
+set answer = $<
+\rm -f words.eps
+unipen2eps data/large.dat -l WORD -s '*a*' -o words.eps -m .3 -f 16
+ghostview words.eps
+
+echo "You can also use uni2animgif. It has a similar syntax as upread and unipen2eps"
+echo ""
+echo "now hit <enter> to start up upworks"
+echo 'upworks data/large.dat h 3 .......'
+set answer = $<
+upworks data/large.dat h 3

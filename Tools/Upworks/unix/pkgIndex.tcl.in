@@ -1,0 +1,4 @@
+# Tcl package index file, version 1.0
+
+package ifneeded Upworks @UNIPEN_VERSION@ [list load [file join $dir libupworks@SHLIB_SUFFIX@] Upworks]
+package ifneeded Ink @UNIPEN_VERSION@ [list load [file join $dir libink@SHLIB_SUFFIX@] Ink]

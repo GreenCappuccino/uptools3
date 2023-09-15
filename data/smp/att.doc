@@ -1,0 +1,68 @@
+.VERSION                1.0
+
+.DATA_SOURCE            att
+.DATA_ID                August-93-sample
+
+.COMMENT                ###################
+                        ### INFORMATION ###
+                        ###################
+.DATA_CONTACT   
+        Name: Dept 11359 - Adaptive Systems Research
+        Affiliation: AT&T Bell Laboratories
+        Address: 101 Crawfords Corner Rd
+        Holmdel, NJ, 07733 , USA
+        Phone: 1 (908) 949-2783 (secty.)
+        Fax: 1 (908) 949-7722
+        Email:
+        Tech Contacts: Don Henderson   908-949-4591 
+        Isabelle Guyon  415-442-5937 
+.DATA_INFO      
+        Alphabet: Latin, uppercase,lowercase,punctuation
+        Lexicon: The text from "Alice In Wonderland"
+        Quantity: very small sample
+        Quality: ?
+        Distribution: Given by .LEXICON_FREQ
+        Number of writer(s): 1
+        Writing style: Natural - no constraints....
+        Segmentation: Words written in boxes in
+        upper area of form. Last line on 
+        the form is a unseg'd sentence.
+.SETUP  
+        Site: AT&T Bell Laboratories
+        Holmdel cafeteria, New Jersey, USA
+        Time: 
+        Conditions: Supervised recording conditions
+        People sitting at a desk
+        Writers: Volunteer staff members
+        Form layout: 1 form containing 1 segmented word
+        area (1-12 words) and a second 
+        area having a sentence made up of these
+        words.
+.PAD    
+        Machine name: WACOM HD-648A LCD Digitizer & 386 PC
+        Display: Backlit LCD 
+        Matrix 640  x 480 points
+        VGA standard, black on white, monochrome
+        Sensor: Electromagnetic resonance sensor
+        Pen: Untethered pen, tip switch and side button
+        Driver: PC driver developed in house..
+
+.COMMENT                ###################
+                        ### DATA LAYOUT ###
+                        ###################
+.X_DIM                  4160
+.Y_DIM                  3200
+.H_LINE                 450 1900 2300
+
+.COMMENT                ###################
+                        ### UNIT SYSTEM ###
+                        ###################
+.X_POINTS_PER_INCH      508
+.Y_POINTS_PER_INCH      508
+.POINTS_PER_SECOND      200
+
+.COMMENT                ####################
+                        ### DECLARATIONS ###
+                        ####################
+.COORD                  X Y
+.HIERARCHY              PAGE TEXT_CHUNK WORD

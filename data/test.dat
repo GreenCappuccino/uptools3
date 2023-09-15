@@ -1,0 +1,66 @@
+.VERSION 1.0
+.INCLUDE test.data
+.INCLUDE test.wrd
+.INCLUDE test.chr
+.COMMENT ###############################################################
+
+.PAD     Brand:             Wacom
+         Type:              PL-100V
+         Serial Nr.:        2JPJB0044
+         
+         Sensor:            Electromagnetic, wireless pen (transponder)
+         Pen:               Untethered Pen, Pressure
+         Driver:            Custom-made, MS Windows
+         Sampling mode:     Equidistant in time, during PenUp & Pendown (continuous)
+         Sample rate:       100            [Hz]
+         Resolution:        0.02           [mm/unit]
+         Accuracy:          0.1            [mm]
+         Width:             192            [mm]
+         Height:            143            [mm]
+.COORD                      X Y
+.X_POINTS_PER_MM             50 
+.Y_POINTS_PER_MM             50 
+.POINTS_PER_SECOND          100
+
+.COMMENT ####################################################################
+
+.WRITER_ID    louis
+.AGE           32 
+.SEX          M
+.HAND         R
+.COMMENT style              Handprint
+.STYLE        PRINT
+.SKILL        ???
+.COMMENT writer info entry at             9/17/96 5:23:50 PM
+         country of education:            The Netherlands
+         education:         universitair
+         profession:        Research
+         computer experience: 15 years
+
+.COMMENT ###############################################################
+
+.LEXICON_ID c:\usr\lambert\unipen\test\fox.lex
+.LEXICON
+          "the"
+          "quick"
+          "brown"
+          "fox"
+          "jumps"
+          "over"
+          "the"
+          "lazy"
+          "dog"
+.COMMENT Paragraphs are presented in this order
+.COMMENT  Number of Paragraph entries=9
+
+.COMMENT ###############################################################
+.ALPHABET       "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" 
+                "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" 
+                "u" "v" "w" "x" "y" "z" 
+.ALPHABET_FREQ    1   1   1   1   3   1   1   2   1  1  
+                  1   1   1   1   4   1   1   2   1  2  
+                  2   1   1   1   1   1 
+
+.COMMENT ###############################################################
+
+.HIERARCHY WORD CHAR

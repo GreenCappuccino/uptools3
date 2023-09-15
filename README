@@ -1,0 +1,58 @@
+Good luck with the latest UNIPEN package uptools3 
+This is VERSION 3.2
+
+Louis Vuurpijl and Lambert Schomaker -- versions 2 and 3
+uplib version 1 was made by Gerben Abbink
+
+We hope that the next installation instructions will be sufficient. They
+were for a number of installations on diverse machines for us.
+
+0) unpack uptools3.tar.gz (which you already did)
+1) edit Makefile.template 
+   a) set the variable UPTOOLS, typically your current working directory
+      In that case, leave it to USE_PWD
+   b) set the variable MY_TCL_DIR and MY_TCL_LIB if you have not installed
+      Tcl7.6/Tk4.2 in /usr/local/lib or so.
+   c) In some cases, you may have to set the variables X11_INCLUDE and X11_LIB.
+   d) If you want an installation somewhere, edit the INSTALL variables
+2) run ./configure
+3) type 'make all'
+4) Consider the KNOWN PROBLEMS section if it fails
+5) if you wish to install it somewhere, type 'make install'
+
+If you made it local, type 'source UPTOOLS_SETTINGS' and type 'uptools_tutorial'
+
+If you installed it, you will have a directory 'UP_INSTALL_UL_LIB', which
+contains UPTOOLS_SETTINGS. What I did after installation, was:
+
+edit my .login and added the lines
+
+setenv UP_INSTALL_UL_LIB /usr/local/lib/uptools3
+source $UP_INSTALL_UL_LIB/UPTOOLS_SETTINGS
+setenv UPWORKS_RESOURCE_FILE ~/.upworksrc
+setenv UPWORKS_FONTS         ~/.upworks_fonts
+
+For running 'upworks', you will need two resource files, something like
+.upworksrc and
+.upworks_fonts
+
+A proper .upworksrc is UpworksDefaults, contained in this distribution
+A proper .upworks_fonts can be created via:
+
+	xlsfonts > .upworks_fonts
+
+
+######## KNOWN PROBLEMS
+
+I)  When making 'upworks', the compiler complaints about:
+    "unrecognized option `-KPIC'". This error occurs on some solaris
+    systems, because the configure script thinks -KPIC is a correct option.
+
+    Solve this by editing Tools/Upworks/unix/Makefile, and change the line
+    SHLIB_CFLAGS =  -KPIC
+    into
+    SHLIB_CFLAGS =  -fPIC -DPIC
+
+II) When compiling, the compiler complaints about X11-header files not found.
+    Solution: see 1c).
+
